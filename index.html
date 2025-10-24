@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход - Smart Journal</title>
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .logo p {
+            color: var(--dark);
+            opacity: 0.7;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+            background: white;
+        }
+
+        .form-group input::placeholder {
+            color: #adb5bd;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #e9ecef;
+            color: var(--gray);
+            font-size: 13px;
+        }
+
+        .notification {
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            display: none;
+            text-align: center;
+            border: 1px solid transparent;
+        }
+
+        .notification.error {
+            background: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+
+        .notification.success {
+            background: #d1edff;
+            color: #0c5460;
+            border-color: #bee5eb;
+        }
+
+        .access-info {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            text-align: center;
+            display: none;
+        }
+
+        .access-info.admin {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .access-info.dekan {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .access-info.dezhur {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <h1>📚 Smart Journal</h1>
+            <p>Система учета посещаемости</p>
+        </div>
+
+        <div id="notification" class="notification" style="display: none;"></div>
+
+        <div class="form-group">
+            <label for="login">Логин:</label>
+            <input type="text" id="login" placeholder="Введите ваш логин">
+        </div>
+
+        <div class="form-group">
+            <label for="password">Пароль:</label>
+            <input type="password" id="password" placeholder="Введите пароль">
+        </div>
+
+        <button class="btn btn-primary" onclick="login()">
+            <span>Войти в систему</span>
+        </button>
+
+        <div id="accessInfo" class="access-info"></div>
+
+        <div class="login-footer">
+            <p>Введите данные для входа в систему</p>
+        </div>
+    </div>
+
+    <script>
+        // Данные для входа
+        const loginCredentials = {
+            'dezhur': { 
+                login: 'dezhur', 
+                password: '123',
+                name: 'Дежурный преподаватель',
+                access: '50% доступ',
+                role: 'dezhur'
+            },
+            'admin': { 
+                login: 'admin', 
+                password: 'admin123',
+                name: 'Администратор системы',
+                access: '100% доступ',
+                role: 'admin'
+            },
+            'dekan': { 
+                login: 'dekan', 
+                password: 'dekan123',
+                name: 'Декан факультета',
+                access: '90% доступ',
+                role: 'dekan'
+            }
+        };
+
+        function showNotification(message, type = 'error') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.style.display = 'block';
+        }
+
+        function hideNotification() {
+            document.getElementById('notification').style.display = 'none';
+        }
+
+        function showAccessInfo(userType) {
+            const accessInfo = document.getElementById('accessInfo');
+            const credentials = loginCredentials[userType];
+            
+            accessInfo.textContent = `Вы вошли как: ${credentials.name} (${credentials.access})`;
+            accessInfo.className = `access-info ${userType}`;
+            accessInfo.style.display = 'block';
+        }
+
+        function hideAccessInfo() {
+            document.getElementById('accessInfo').style.display = 'none';
+        }
+
+        function login() {
+            const login = document.getElementById('login').value.trim();
+            const password = document.getElementById('password').value;
+
+            if (!login || !password) {
+                showNotification('Введите логин и пароль');
+                return;
+            }
+
+            // Проверяем все возможные учетные записи
+            let userFound = null;
+            for (const userType in loginCredentials) {
+                const credentials = loginCredentials[userType];
+                if (login === credentials.login && password === credentials.password) {
+                    userFound = userType;
+                    break;
+                }
+            }
+
+            if (userFound) {
+                const credentials = loginCredentials[userFound];
+                
+                // Показываем информацию о доступе
+                showAccessInfo(userFound);
+                
+                // Сохраняем данные пользователя
+                const userData = {
+                    login: login,
+                    role: userFound,
+                    name: credentials.name,
+                    access: credentials.access,
+                    loginTime: new Date().toISOString()
+                };
+
+                localStorage.setItem('currentUser', JSON.stringify(userData));
+                
+                // Показываем сообщение об успешном входе
+                showNotification(`Успешный вход! ${credentials.name}`, 'success');
+                
+                // Через 2 секунды перенаправляем на основную страницу
+                setTimeout(() => {
+                    window.location.href = 'main.html';
+                }, 2000);
+            } else {
+                showNotification('Неверный логин или пароль');
+            }
+        }
+
+        // Автозаполнение при загрузке (опционально)
+        window.onload = function() {
+            // Фокус на поле логина
+            document.getElementById('login').focus();
+        };
+
+        // Enter для входа
+        document.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                login();
+            }
+        });
+    </script>
+</body>
+</html>

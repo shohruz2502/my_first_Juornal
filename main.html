@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Журнал посещаемости</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --info: #3498db;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --gray: #95a5a6;
+            --border: #bdc3c7;
+            --shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        body {
+            background: #f8f9fa;
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--dark);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .header-left p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255,255,255,0.15);
+            padding: 10px 20px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .user-role {
+            background: var(--success);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .btn-logout {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .btn-logout:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary);
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: var(--light);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab {
+            padding: 16px 30px;
+            background: transparent;
+            color: var(--gray);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+        }
+
+        .tab:hover {
+            color: var(--primary);
+            background: rgba(255,255,255,0.5);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background: white;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Calendar Section */
+        .calendar-section {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .current-date {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 10px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .calendar-day-header {
+            padding: 15px 10px;
+            text-align: center;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 13px;
+            background: var(--light);
+        }
+
+        .calendar-day {
+            padding: 15px 10px;
+            text-align: center;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            font-size: 14px;
+            position: relative;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .calendar-day:hover {
+            background: #e3f2fd;
+            transform: translateY(-1px);
+        }
+
+        .calendar-day.selected {
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+        }
+
+        .calendar-day.today {
+            background: #fff3cd;
+            font-weight: 600;
+            border: 2px solid var(--warning);
+        }
+
+        .calendar-day.weekend {
+            background: #f8f9fa;
+            color: var(--danger);
+        }
+
+        .calendar-day.has-data::after {
+            content: '';
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background: var(--success);
+            border-radius: 50%;
+        }
+
+        .calendar-day.absent-data::after {
+            background: var(--danger);
+        }
+
+        .calendar-day.future {
+            background: #f8f9fa;
+            color: var(--gray);
+        }
+
+        .calendar-day.disabled {
+            background: #f5f5f5;
+            color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .calendar-day.disabled:hover {
+            background: #f5f5f5;
+            transform: none;
+        }
+
+        /* Filters */
+        .filters {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 20px;
+            margin-bottom: 25px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 14px;
+        }
+
+        .filter-select {
+            padding: 12px 15px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* Students Grid */
+        .students-container {
+            max-height: 600px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+        }
+
+        .students-grid {
+            display: grid;
+            gap: 1px;
+            background: var(--border);
+        }
+
+        .student-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            background: white;
+            padding: 15px 20px;
+            align-items: center;
+            transition: background-color 0.2s ease;
+        }
+
+        .student-row:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .student-row:hover {
+            background: #e3f2fd;
+        }
+
+        .student-info h3 {
+            font-size: 15px;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .student-info p {
+            color: var(--gray);
+            font-size: 13px;
+        }
+
+        .attendance-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .attendance-btn {
+            padding: 8px 16px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .attendance-btn.active {
+            font-weight: 600;
+            transform: scale(1.05);
+        }
+
+        .attendance-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-present {
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .btn-present.active {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-absent {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .btn-absent.active {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Weekly Report */
+        .week-report {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .week-report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .current-week {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .week-nav {
+            display: flex;
+            gap: 10px;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .report-table th {
+            background: var(--light);
+            padding: 15px 10px;
+            text-align: center;
+            font-weight: 600;
+            color: var(--dark);
+            border: 1px solid var(--border);
+            font-size: 12px;
+        }
+
+        .report-table td {
+            padding: 12px 8px;
+            text-align: center;
+            border: 1px solid var(--border);
+            font-size: 12px;
+        }
+
+        .student-name {
+            text-align: left;
+            font-weight: 600;
+            background: var(--light);
+            padding: 12px 15px;
+            min-width: 200px;
+        }
+
+        .present-cell {
+            background: #d4edda;
+            color: #155724;
+            font-weight: 600;
+        }
+
+        .absent-cell {
+            background: #f8d7da;
+            color: #721c24;
+            font-weight: 600;
+        }
+
+        .total-cell {
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+        }
+
+        .hours-cell {
+            background: #e9ecef;
+            font-weight: 600;
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            box-shadow: var(--shadow);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: var(--success);
+        }
+
+        .notification.error {
+            background: var(--danger);
+        }
+
+        .notification.warning {
+            background: var(--warning);
+        }
+
+        .notification.info {
+            background: var(--info);
+        }
+
+        /* Access Message */
+        .access-message {
+            background: #fff3cd;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #ffeaa7;
+            font-size: 14px;
+        }
+
+        .access-message h4 {
+            color: #856404;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+
+        .access-message p {
+            color: #856404;
+            margin: 0;
+        }
+
+        /* Admin Controls */
+        .admin-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        /* Auto Save Status */
+        .auto-save-status {
+            background: #d1ecf1;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            text-align: center;
+        }
+
+        /* Loading Spinner */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .filters {
+                grid-template-columns: 1fr;
+            }
+            
+            .calendar-day {
+                padding: 10px 5px;
+                min-height: 50px;
+                font-size: 12px;
+            }
+            
+            .student-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .attendance-controls {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <h1>📒 Журнал посещаемости</h1>
+                <p>Система учета посещений студентов</p>
+            </div>
+            <div class="user-info">
+                <span id="userFullName">Пользователь</span>
+                <span class="user-role" id="userRole">Роль</span>
+                <button class="btn btn-logout" onclick="logout()">Выйти</button>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('daily')">📅 Ежедневный учет</button>
+            <button class="tab" onclick="switchTab('weekly')">📊 Недельный отчет</button>
+        </div>
+
+        <!-- Ежедневный учет -->
+        <div id="daily" class="tab-content active">
+            <div class="calendar-section">
+                <div class="calendar-header">
+                    <div class="current-date" id="currentMonth"></div>
+                    <div class="calendar-nav">
+                        <button class="btn btn-primary" onclick="changeMonth(-1)">◀ Назад</button>
+                        <button class="btn btn-primary" onclick="changeMonth(1)">Вперед ▶</button>
+                    </div>
+                </div>
+                <div class="calendar-grid" id="calendarGrid"></div>
+            </div>
+
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="professionFilter">Профессия и группа:</label>
+                    <select id="professionFilter" class="filter-select" onchange="loadStudents()">
+                        <option value="">Выберите профессию</option>
+                        <option value="programming-1">Программирование - Группа 1</option>
+                        <option value="programming-2">Программирование - Группа 2</option>
+                        <option value="design-1">Дизайн - Группа 1</option>
+                        <option value="marketing-1">Маркетинг - Группа 1</option>
+                        <option value="management-1">Менеджмент - Группа 1</option>
+                    </select>
+                </div>
+                <div id="editModeContainer">
+                    <button class="btn btn-warning" onclick="toggleEditMode()" id="editModeBtn">
+                        ✏️ Режим редактирования (ВКЛ)
+                    </button>
+                </div>
+            </div>
+
+            <div id="accessMessage" class="access-message" style="display: none;">
+                <h4>⚠️ Ограниченный доступ</h4>
+                <p>Вы можете отмечать посещаемость только за сегодняшний день. После сохранения изменения будут заблокированы.</p>
+            </div>
+
+            <div class="students-container">
+                <div class="students-grid" id="studentsList"></div>
+            </div>
+
+            <div class="auto-save-status" id="autoSaveStatus">
+                💾 Все изменения сохраняются автоматически
+            </div>
+        </div>
+
+        <!-- Недельный отчет -->
+        <div id="weekly" class="tab-content">
+            <div class="week-report-header">
+                <div class="current-week" id="currentWeek"></div>
+                <div class="week-nav">
+                    <button class="btn btn-primary" onclick="changeWeek(-1)">◀ Прошлая неделя</button>
+                    <button class="btn btn-primary" onclick="changeWeek(1)">Следующая неделя ▶</button>
+                </div>
+            </div>
+
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="weekProfessionFilter">Профессия и группа:</label>
+                    <select id="weekProfessionFilter" class="filter-select" onchange="generateWeekReport()">
+                        <option value="">Все профессии</option>
+                        <option value="programming-1">Программирование - Группа 1</option>
+                        <option value="programming-2">Программирование - Группа 2</option>
+                        <option value="design-1">Дизайн - Группа 1</option>
+                        <option value="marketing-1">Маркетинг - Группа 1</option>
+                        <option value="management-1">Менеджмент - Группа 1</option>
+                    </select>
+                </div>
+            </div>
+            <div class="week-report">
+                <div id="weekReport"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // Данные студентов по профессиям и группам
+        const studentsData = {
+            'programming-1': [
+                { id: 1, name: 'Абдуназаров Муродчон Эсоналиевич', profession: 'Программирование' },
+                { id: 2, name: 'Валиева Мухлиса Абдунабиевна', profession: 'Программирование' },
+                { id: 3, name: 'Камолов Машрабчон Умарчонович', profession: 'Программирование' },
+                { id: 4, name: 'Кандахоров Фаррух Камолович', profession: 'Программирование' },
+                { id: 5, name: 'Косим Фирлаве Назирчонгола', profession: 'Программирование' },
+                { id: 6, name: 'Маматкулов Парил Гайратчонович', profession: 'Программирование' },
+                { id: 7, name: 'Мирголибов Саниафек Тулкинчонович', profession: 'Программирование' },
+                { id: 8, name: 'Мирчалилова Шахло Хомидчонова', profession: 'Программирование' },
+                { id: 9, name: 'Назиркулов Фуркат Ойбекчонович', profession: 'Программирование' },
+                { id: 10, name: 'Нуралиев Далер Шухратович', profession: 'Программирование' },
+                { id: 11, name: 'Норматов Шахрыер Икромжон Угли', profession: 'Программирование' },
+                { id: 12, name: 'Олимов Дампрчон Замирчонович', profession: 'Программирование' },
+                { id: 13, name: 'Рахимов Шамсиддин Равшанович', profession: 'Программирование' },
+                { id: 14, name: 'Рачабов Искандар Илкомович', profession: 'Программирование' },
+                { id: 15, name: 'Тайяров Фаралул Рустамчонович', profession: 'Программирование' },
+                { id: 16, name: 'Файянев Рузикул Баходирович', profession: 'Программирование' },
+                { id: 17, name: 'Хайдаров Феруз Сандчонович', profession: 'Программирование' },
+                { id: 18, name: 'Хасанов Азиянск Тохирчонович', profession: 'Программирование' },
+                { id: 19, name: 'Хайдаров Аличон Шоддерчонович', profession: 'Программирование' },
+                { id: 20, name: 'Чураев Фирлаве Кахрамонович', profession: 'Программирование' },
+                { id: 21, name: 'Шамсиев Найрузиох Илкомович', profession: 'Программирование' },
+                { id: 22, name: 'Шодихода Сантинмухаммади Саид', profession: 'Программирование' },
+                { id: 23, name: 'Юсупов Бобурчон Рудомчонович', profession: 'Программирование' },
+                { id: 24, name: 'Олимов Махмудчон', profession: 'Программирование' },
+                { id: 25, name: 'Зихруллов Амриддин', profession: 'Программирование' }
+            ],
+            'programming-2': [
+                { id: 26, name: 'Петров Иван Сергеевич', profession: 'Программирование' },
+                { id: 27, name: 'Сидорова Анна Михайловна', profession: 'Программирование' },
+                { id: 28, name: 'Козлов Дмитрий Владимирович', profession: 'Программирование' }
+            ],
+            'design-1': [
+                { id: 29, name: 'Иванова Мария Александровна', profession: 'Дизайн' },
+                { id: 30, name: 'Смирнов Алексей Петрович', profession: 'Дизайн' }
+            ],
+            'marketing-1': [
+                { id: 31, name: 'Кузнецова Елена Викторовна', profession: 'Маркетинг' },
+                { id: 32, name: 'Попов Сергей Николаевич', profession: 'Маркетинг' }
+            ],
+            'management-1': [
+                { id: 33, name: 'Васильева Ольга Дмитриевна', profession: 'Менеджмент' },
+                { id: 34, name: 'Федоров Андрей Игоревич', profession: 'Менеджмент' }
+            ]
+        };
+
+        // Глобальные переменные
+        let currentUser = null;
+        let currentDate = new Date();
+        let selectedDate = new Date();
+        let currentWeekStart = new Date();
+        let editMode = true;
+        let attendanceData = {};
+        let lockedDays = {};
+
+        // Проверка авторизации при загрузке
+        function checkAuth() {
+            const userData = localStorage.getItem('currentUser');
+            
+            if (userData) {
+                currentUser = JSON.parse(userData);
+                showMainApp();
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+
+        function showMainApp() {
+            document.getElementById('userFullName').textContent = currentUser.name;
+            document.getElementById('userRole').textContent = getRoleName(currentUser.role);
+            
+            setupAccessRights();
+            initApp();
+            showNotification(`Добро пожаловать, ${currentUser.name}!`, 'success');
+        }
+
+        function getRoleName(role) {
+            const roles = {
+                'dezhur': 'Дежурный',
+                'admin': 'Администратор',
+                'dekan': 'Декан'
+            };
+            return roles[role] || role;
+        }
+
+        function setupAccessRights() {
+            if (currentUser.role === 'dezhur') {
+                document.getElementById('accessMessage').style.display = 'block';
+                document.getElementById('editModeContainer').style.display = 'none';
+            }
+            
+            // Для админа и декана всегда включен режим редактирования
+            if (currentUser.role === 'admin' || currentUser.role === 'dekan') {
+                editMode = true;
+                updateEditModeButton();
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+
+        // Уведомления
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+
+        // Загрузка данных
+        function loadData() {
+            const saved = localStorage.getItem('attendanceData');
+            if (saved) {
+                attendanceData = JSON.parse(saved);
+            }
+            
+            const savedLockedDays = localStorage.getItem('lockedDays');
+            if (savedLockedDays) {
+                lockedDays = JSON.parse(savedLockedDays);
+            }
+        }
+
+        // Сохранение данных
+        function saveData() {
+            localStorage.setItem('attendanceData', JSON.stringify(attendanceData));
+            localStorage.setItem('lockedDays', JSON.stringify(lockedDays));
+            
+            if (currentUser.role === 'dezhur') {
+                const todayKey = new Date().toISOString().split('T')[0];
+                if (!lockedDays[todayKey]) {
+                    lockedDays[todayKey] = {};
+                }
+                lockedDays[todayKey][currentUser.id] = true;
+                localStorage.setItem('lockedDays', JSON.stringify(lockedDays));
+                
+                showNotification('Изменения сохранены. Дальнейшее редактирование заблокировано.', 'warning');
+            } else {
+                showNotification('Данные успешно сохранены!', 'success');
+            }
+        }
+
+        // Автосохранение
+        function autoSave() {
+            saveData();
+        }
+
+        // Инициализация приложения
+        function initApp() {
+            loadData();
+            setCurrentWeekStart();
+            generateCalendar();
+            generateWeekReport();
+            
+            setInterval(autoSave, 30000);
+        }
+
+        // Календарь
+        function generateCalendar() {
+            const calendarGrid = document.getElementById('calendarGrid');
+            const currentMonth = document.getElementById('currentMonth');
+            
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            currentMonth.textContent = currentDate.toLocaleString('ru', { 
+                month: 'long', 
+                year: 'numeric' 
+            }).replace(/^./, c => c.toUpperCase());
+            
+            calendarGrid.innerHTML = '';
+            
+            // Заголовки дней недели
+            const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+            days.forEach(day => {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day-header';
+                dayElement.textContent = day;
+                calendarGrid.appendChild(dayElement);
+            });
+            
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            
+            // Пустые ячейки до первого дня
+            let firstDayOfWeek = firstDay.getDay();
+            if (firstDayOfWeek === 0) firstDayOfWeek = 6;
+            else firstDayOfWeek--;
+            
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day disabled';
+                calendarGrid.appendChild(emptyDay);
+            }
+            
+            // Дни месяца
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                dayElement.textContent = day;
+                
+                const date = new Date(year, month, day);
+                date.setHours(0, 0, 0, 0);
+                const dateKey = date.toISOString().split('T')[0];
+                
+                // Проверка на сегодняшний день
+                if (date.getTime() === today.getTime()) {
+                    dayElement.classList.add('today');
+                }
+                
+                // Выходные дни
+                if (date.getDay() === 0 || date.getDay() === 6) {
+                    dayElement.classList.add('weekend');
+                }
+                
+                // Будущие дни
+                if (date > today) {
+                    dayElement.classList.add('future');
+                }
+                
+                // Проверяем есть ли данные за этот день
+                if (hasAttendanceData(dateKey)) {
+                    dayElement.classList.add(hasAbsences(dateKey) ? 'absent-data' : 'has-data');
+                }
+                
+                // Проверяем доступность дня для редактирования
+                if (canUserEditDate(date)) {
+                    dayElement.onclick = () => selectDate(date);
+                } else {
+                    dayElement.classList.add('disabled');
+                }
+                
+                // Выделяем выбранный день
+                if (date.getTime() === selectedDate.getTime()) {
+                    dayElement.classList.add('selected');
+                }
+                
+                calendarGrid.appendChild(dayElement);
+            }
+        }
+
+        // Проверка может ли пользователь редактировать дату
+        function canUserEditDate(date) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const dateKey = date.toISOString().split('T')[0];
+            
+            // Админ и декан имеют полный доступ ко всем датам
+            if (currentUser.role === 'admin' || currentUser.role === 'dekan') {
+                return true;
+            }
+            
+            // Дежурный может редактировать только сегодня
+            if (currentUser.role === 'dezhur') {
+                if (date.getTime() !== today.getTime()) {
+                    return false;
+                }
+                // Проверяем не заблокирован ли уже этот день для дежурного
+                return !lockedDays[dateKey] || !lockedDays[dateKey][currentUser.id];
+            }
+            
+            return false;
+        }
+
+        function hasAttendanceData(dateKey) {
+            return Object.keys(attendanceData).some(profGroup => 
+                attendanceData[profGroup] && attendanceData[profGroup][dateKey]
+            );
+        }
+
+        function hasAbsences(dateKey) {
+            return Object.keys(attendanceData).some(profGroup => 
+                attendanceData[profGroup] && 
+                attendanceData[profGroup][dateKey] &&
+                Object.values(attendanceData[profGroup][dateKey]).some(status => status === 'absent')
+            );
+        }
+
+        function selectDate(date) {
+            if (!canUserEditDate(date)) {
+                if (currentUser.role === 'dezhur') {
+                    showNotification('Дежурный может работать только с сегодняшним днем!', 'error');
+                } else {
+                    showNotification('Этот день недоступен для редактирования', 'error');
+                }
+                return;
+            }
+            
+            selectedDate = date;
+            generateCalendar();
+            loadStudents();
+            
+            const dateString = selectedDate.toLocaleDateString('ru', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            }).replace(/^./, c => c.toUpperCase());
+            
+            showNotification(`Выбрана дата: ${dateString}`, 'success');
+        }
+
+        function changeMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            generateCalendar();
+            autoSelectDateAfterMonthChange();
+        }
+
+        function autoSelectDateAfterMonthChange() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const lastDay = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            // Для админа и декана выбираем первый день месяца
+            if (currentUser.role === 'admin' || currentUser.role === 'dekan') {
+                const firstDate = new Date(year, month, 1);
+                selectDate(firstDate);
+                return;
+            }
+            
+            // Для дежурного пытаемся выбрать сегодняшний день
+            const todayInThisMonth = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            if (todayInThisMonth.getMonth() === month && todayInThisMonth.getFullYear() === year && canUserEditDate(todayInThisMonth)) {
+                selectDate(todayInThisMonth);
+                return;
+            }
+            
+            // Ищем последний доступный день месяца
+            for (let day = lastDay; day >= 1; day--) {
+                const date = new Date(year, month, day);
+                if (canUserEditDate(date)) {
+                    selectDate(date);
+                    return;
+                }
+            }
+        }
+
+        // Список студентов
+        function loadStudents() {
+            const professionFilter = document.getElementById('professionFilter');
+            const selectedProfession = professionFilter.value;
+            
+            if (!selectedProfession) {
+                document.getElementById('studentsList').innerHTML = '<div class="student-row"><div class="student-info"><p>Выберите профессию и группу</p></div></div>';
+                return;
+            }
+            
+            const students = studentsData[selectedProfession] || [];
+            const studentsList = document.getElementById('studentsList');
+            studentsList.innerHTML = '';
+            
+            const dateKey = selectedDate.toISOString().split('T')[0];
+            const canEdit = canUserEditDate(selectedDate) && editMode;
+            
+            if (students.length === 0) {
+                studentsList.innerHTML = '<div class="student-row"><div class="student-info"><p>Студенты не найдены</p></div></div>';
+                return;
+            }
+            
+            students.forEach(student => {
+                const row = document.createElement('div');
+                row.className = 'student-row';
+                
+                const currentStatus = attendanceData[selectedProfession] && 
+                                   attendanceData[selectedProfession][dateKey] && 
+                                   attendanceData[selectedProfession][dateKey][student.id];
+                
+                row.innerHTML = `
+                    <div class="student-info">
+                        <h3>${student.name}</h3>
+                        <p>${student.profession} - Группа ${selectedProfession.split('-')[1]}</p>
+                    </div>
+                    <div class="attendance-controls">
+                        <button class="attendance-btn btn-present ${currentStatus === 'present' ? 'active' : ''}" 
+                                onclick="markAttendance(${student.id}, 'present')"
+                                ${!canEdit ? 'disabled' : ''}>
+                            Присутствовал
+                        </button>
+                        <button class="attendance-btn btn-absent ${currentStatus === 'absent' ? 'active' : ''}" 
+                                onclick="markAttendance(${student.id}, 'absent')"
+                                ${!canEdit ? 'disabled' : ''}>
+                            Отсутствовал
+                        </button>
+                    </div>
+                `;
+                
+                studentsList.appendChild(row);
+            });
+        }
+
+        function markAttendance(studentId, status) {
+            const professionFilter = document.getElementById('professionFilter');
+            const selectedProfession = professionFilter.value;
+            
+            if (!selectedProfession) {
+                showNotification('Выберите профессию и группу!', 'error');
+                return;
+            }
+            
+            if (!canUserEditDate(selectedDate)) {
+                showNotification('Этот день недоступен для редактирования', 'error');
+                return;
+            }
+            
+            if (!editMode) {
+                showNotification('Включите режим редактирования!', 'error');
+                return;
+            }
+            
+            const dateKey = selectedDate.toISOString().split('T')[0];
+            
+            if (!attendanceData[selectedProfession]) {
+                attendanceData[selectedProfession] = {};
+            }
+            
+            if (!attendanceData[selectedProfession][dateKey]) {
+                attendanceData[selectedProfession][dateKey] = {};
+            }
+            
+            attendanceData[selectedProfession][dateKey][studentId] = status;
+            loadStudents();
+            generateCalendar();
+            
+            autoSave();
+            
+            showNotification(`Статус студента обновлен: ${status === 'present' ? 'Присутствовал' : 'Отсутствовал'}`, 'success');
+        }
+
+        function toggleEditMode() {
+            if (currentUser.role === 'dezhur') {
+                showNotification('Дежурный всегда работает в режиме редактирования для сегодняшнего дня', 'info');
+                return;
+            }
+            
+            editMode = !editMode;
+            updateEditModeButton();
+            loadStudents();
+            
+            if (editMode) {
+                showNotification('Режим редактирования включен', 'success');
+            } else {
+                showNotification('Режим редактирования выключен', 'warning');
+            }
+        }
+
+        function updateEditModeButton() {
+            const btn = document.getElementById('editModeBtn');
+            if (editMode) {
+                btn.classList.add('btn-warning');
+                btn.innerHTML = '✏️ Режим редактирования (ВКЛ)';
+            } else {
+                btn.classList.remove('btn-warning');
+                btn.innerHTML = '✏️ Режим редактирования (ВЫКЛ)';
+            }
+        }
+
+        // Недельный отчет
+        function setCurrentWeekStart() {
+            const today = new Date();
+            const day = today.getDay();
+            const diff = day === 0 ? -6 : 1 - day;
+            currentWeekStart = new Date(today);
+            currentWeekStart.setDate(today.getDate() + diff);
+            currentWeekStart.setHours(0, 0, 0, 0);
+        }
+
+        function changeWeek(direction) {
+            currentWeekStart.setDate(currentWeekStart.getDate() + (direction * 7));
+            generateWeekReport();
+        }
+
+        function generateWeekReport() {
+            const weekProfessionFilter = document.getElementById('weekProfessionFilter');
+            const selectedProfession = weekProfessionFilter.value;
+            const weekReport = document.getElementById('weekReport');
+            const currentWeek = document.getElementById('currentWeek');
+            
+            // Получаем дни недели (понедельник - суббота)
+            const weekDays = [];
+            for (let i = 0; i < 6; i++) {
+                const date = new Date(currentWeekStart);
+                date.setDate(currentWeekStart.getDate() + i);
+                weekDays.push(date);
+            }
+            
+            // Обновляем заголовок недели
+            const weekEnd = new Date(currentWeekStart);
+            weekEnd.setDate(currentWeekStart.getDate() + 5);
+            currentWeek.textContent = `Неделя: ${currentWeekStart.toLocaleDateString('ru')} - ${weekEnd.toLocaleDateString('ru')}`;
+            
+            let tableHTML = `
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>Студент</th>
+                            <th>Группа</th>
+            `;
+            
+            weekDays.forEach(day => {
+                tableHTML += `<th>${day.toLocaleDateString('ru', { weekday: 'short', day: 'numeric', month: 'short' })}</th>`;
+            });
+            
+            tableHTML += `<th>Итог недели</th></tr></thead><tbody>`;
+            
+            const professions = selectedProfession ? [selectedProfession] : Object.keys(studentsData);
+            
+            professions.forEach(profGroup => {
+                const students = studentsData[profGroup];
+                const groupName = profGroup.split('-')[1];
+                
+                students.forEach(student => {
+                    tableHTML += `<tr>
+                        <td class="student-name">${student.name}</td>
+                        <td class="hours-cell">${groupName}</td>`;
+                    
+                    let presentDays = 0;
+                    let absentDays = 0;
+                    
+                    weekDays.forEach(day => {
+                        const dateKey = day.toISOString().split('T')[0];
+                        const status = attendanceData[profGroup] && 
+                                     attendanceData[profGroup][dateKey] && 
+                                     attendanceData[profGroup][dateKey][student.id];
+                        
+                        if (status === 'present') {
+                            tableHTML += `<td class="present-cell">✓</td>`;
+                            presentDays++;
+                        } else if (status === 'absent') {
+                            tableHTML += `<td class="absent-cell">✗</td>`;
+                            absentDays++;
+                        } else {
+                            tableHTML += `<td>-</td>`;
+                        }
+                    });
+                    
+                    const totalHours = absentDays * 6;
+                    tableHTML += `<td class="hours-cell">
+                        <div>Пропущено: ${totalHours}ч</div>
+                        <div>Присутствовал: ${presentDays}д</div>
+                        <div>Отсутствовал: ${absentDays}д</div>
+                    </td></tr>`;
+                });
+            });
+            
+            tableHTML += `</tbody></table>`;
+            weekReport.innerHTML = tableHTML;
+        }
+
+        // Переключение вкладок
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            document.querySelector(`.tab[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            
+            if (tabName === 'weekly') {
+                generateWeekReport();
+            }
+        }
+
+        // Функции для админа и декана
+        function clearAttendanceData() {
+            if (confirm('Вы уверены, что хотите очистить все данные о посещаемости? Это действие нельзя отменить.')) {
+                attendanceData = {};
+                lockedDays = {};
+                localStorage.removeItem('attendanceData');
+                localStorage.removeItem('lockedDays');
+                
+                generateCalendar();
+                loadStudents();
+                generateWeekReport();
+                
+                showNotification('Все данные о посещаемости очищены', 'success');
+            }
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(attendanceData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `attendance_data_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            showNotification('Данные экспортированы в JSON файл', 'success');
+        }
+
+        // Инициализация при загрузке
+        window.onload = checkAuth;
+
+        // Добавляем кнопки для админа и декана
+        document.addEventListener('DOMContentLoaded', function() {
+            if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'dekan')) {
+                const headerLeft = document.querySelector('.header-left');
+                const adminControls = document.createElement('div');
+                adminControls.className = 'admin-controls';
+                adminControls.innerHTML = `
+                    <button class="btn btn-primary" onclick="exportData()">📤 Экспорт данных</button>
+                    <button class="btn btn-danger" onclick="clearAttendanceData()">🗑️ Очистить данные</button>
+                `;
+                headerLeft.appendChild(adminControls);
+            }
+        });
+    </script>
+</body>
+</html>
